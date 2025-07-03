@@ -11,15 +11,18 @@ model_name = "Facenet"
 detector_backend = "opencv"
 
 # ====== ĐỌC ẢNH MẪU ======
-image_paths = [os.path.join(dataset_path, img) for img in os.listdir(dataset_path)
-               if img.lower().endswith(('.jpg', '.jpeg', '.png'))]
+image_paths = [
+    os.path.join(dataset_path, img)
+    for img in os.listdir(dataset_path)
+    if img.lower().endswith(('.jpg', '.jpeg', '.png'))
+]
 
-# ====== CSV ======
+# ====== KHỞI TẠO CSV ======
 attendance_file = "attendance.csv"
 if not os.path.exists(attendance_file):
     pd.DataFrame(columns=["Name", "Time"]).to_csv(attendance_file, index=False)
 
-# ====== KHỞI TẠO WEBCAM ======
+# ====== KHỞI TẠO CAMERA ======
 cap = cv2.VideoCapture(0)
 recognized = False
 
@@ -56,16 +59,18 @@ while True:
                         frame, detector_backend=detector_backend, enforce_detection=False
                     )
                     for face in face_objs:
-                        x, y, w, h = face["facial_area"].values()
+                        facial_area = face["facial_area"]
+                        x = facial_area.get("x", 0)
+                        y = facial_area.get("y", 0)
+                        w = facial_area.get("w", 0)
+                        h = facial_area.get("h", 0)
                         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                        cv2.putText(frame, student_name, (x, y - 10),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
                     break
 
     except Exception as e:
         print("❌ Lỗi nhận diện:", e)
 
-    cv2.imshow("Face Attendance", frame)
+    cv2.imshow("Face Recognition Attendance", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
